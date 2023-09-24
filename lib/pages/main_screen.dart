@@ -93,10 +93,10 @@ class MainScreen extends StatelessWidget {
                         'Вода/Слив: ${_data[index]['Вода'].round().toString()} (${index != _data.length - 1 ? diff(_data[index+1]['Вода'], _data[index]['Вода']) : 0})',
                     style: TextStyle(fontSize: 12, fontFamily: 'Tahoma')
                 ),
-                trailing: Text((_data[index]['Сумма']).round().toString(), style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, fontFamily: 'Bank', color: Colors.blueGrey),),
+                trailing: Text('${(_data[index]['Сумма']).round().toString()} ₽', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, fontFamily: 'Tahoma', color: Colors.blueGrey),),
                 onTap: () {
                   // Navigator.pushNamed(context, '/meter');
-                },
+                  },
               )
           );
         }
@@ -108,6 +108,19 @@ class MainScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final List meter = [...meterNotifier.value];
     List<_MeterData> data = [];
+
+    final List<Color> color = <Color>[];
+    color.add(Colors.deepOrangeAccent);
+    color.add(Colors.orange);
+    color.add(Colors.redAccent);
+
+    final List<double> stops = <double>[];
+    stops.add(0.0);
+    stops.add(0.5);
+    stops.add(1.0);
+
+    final LinearGradient gradientColors =
+    LinearGradient(colors: color, stops: stops);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -151,7 +164,6 @@ class MainScreen extends StatelessWidget {
             if (_elem['Сумма']!=0)
               data.add(_MeterData(monthNum(_elem['month']), _elem['Сумма']));
           }
-          print('NOTIF:: ${notif}');
           return Column(
             children: [
               Row(
@@ -162,59 +174,80 @@ class MainScreen extends StatelessWidget {
                   label(notif.last['Вода'].round().toString(), 'вода'),
                 ],
               ),
-              Container(
-                height: 300,
-                child: Column(children: [
-                  SfCartesianChart(
-                      // margin: EdgeInsets.all(5),
-                      zoomPanBehavior: ZoomPanBehavior(enablePinching: true),
-                      primaryXAxis: CategoryAxis(
-                          majorGridLines: const MajorGridLines(width: 0),
-                          labelPlacement: LabelPlacement.onTicks,
-                          rangePadding: ChartRangePadding.auto,
-                          interval: 1
-                      ),
-                      primaryYAxis: NumericAxis(
-                        // minimum: 30,
-                        // maximum: 80,
-                        //   interval: 150,
-                          // isVisible: false,
-                          rangePadding: ChartRangePadding.additional,
-                          axisLine: const AxisLine(width: 0),
-                          edgeLabelPlacement: EdgeLabelPlacement.shift,
-                          // labelFormat: '{value}°F',
-                          majorTickLines: const MajorTickLines(size: 0)
-                      ),
-                      // plotAreaBorderWidth: 1,
-                      // borderWidth: 5,
-                      // backgroundColor: Colors.lightGreen,
-                      // borderColor: Colors.blue,
-                      // title: ChartTitle(text: 'Half yearly sales analysis'),
-                      // legend: Legend(isVisible: true),
-                      tooltipBehavior: TooltipBehavior(enable: true),
-                      series: <ChartSeries<_MeterData, String>>[
-                        SplineSeries<_MeterData, String>(
-                          // width: 3,
-                          dataSource: data,
-                          xValueMapper: (_MeterData sales, _) => sales.data,
-                          yValueMapper: (_MeterData sales, _) => sales.meter,
-                          name: 'Сумма',
-                          // Enable data label
-                          dataLabelSettings: DataLabelSettings(
-                            isVisible: true,
-                            // useSeriesColor: true,
-                            // offset: Offset(0, 10),
+              Stack(
+                alignment: AlignmentDirectional.topCenter,
+                children: [
+                  Positioned(
+                    top: 15,
+                    child: Icon(Icons.currency_ruble, size: 90, color: Colors.black12,),
+                  ),
+                  Text('ЗАТРАТЫ НА КОММУНАЛЬНЫЕ УСЛУГИ', style: TextStyle(
+                      fontSize: 12,
+                      fontFamily: 'Copp',
+                      color: Colors.black12
+                  ),),
+                  Container(
+                    // color: Colors.deepOrange[100],
+                      height: 220,
+                      child: SfCartesianChart(
+                          margin: EdgeInsets.fromLTRB(0, 0, 0, 2),
+                          // plotAreaBackgroundImage: AssetImage('assets/icon.png'),
+                          zoomPanBehavior: ZoomPanBehavior(enablePinching: true),
+                          primaryXAxis: CategoryAxis(
+                            majorGridLines: const MajorGridLines(width: 0),
+                            labelPlacement: LabelPlacement.onTicks,
+                            rangePadding: ChartRangePadding.auto,
+                            interval: 1,
+                            isVisible: false,
                           ),
-                          markerSettings: MarkerSettings(
-                              isVisible: true,
-                              height:  4,
-                              width:  4,
-                              borderWidth: 3,
-                              borderColor: Colors.deepOrangeAccent
+                          primaryYAxis: NumericAxis(
+                              minimum: 0,
+                              // maximum: 80,
+                              //   interval: 150,
+                              isVisible: false,
+                              rangePadding: ChartRangePadding.round,
+                              axisLine: const AxisLine(width: 0),
+                              edgeLabelPlacement: EdgeLabelPlacement.shift,
+                              // labelFormat: '{value}°F',
+                              majorTickLines: const MajorTickLines(size: 0)
                           ),
-                      )
-                  ]),
-                ])),
+                          plotAreaBorderWidth: 0,
+                          // borderWidth: 5,
+                          // backgroundColor: Colors.lightGreen,
+                          // borderColor: Colors.blue,
+                          // title: ChartTitle(text: 'Half yearly sales analysis'),
+                          // legend: Legend(isVisible: true),
+                          tooltipBehavior: TooltipBehavior(enable: true, opacity: 0.7),
+                          series: <ChartSeries<_MeterData, String>>[
+                            SplineAreaSeries<_MeterData, String>(
+                              opacity: 0.8,
+                              // width: 3,
+                              dataSource: data,
+                              splineType: SplineType.cardinal,
+                              xValueMapper: (_MeterData sales, _) => sales.data,
+                              yValueMapper: (_MeterData sales, _) => sales.meter,
+                              gradient: gradientColors,
+                              name: 'Сумма',
+                              // Enable data label
+                              dataLabelSettings: DataLabelSettings(
+                                  isVisible: true,
+                                  color: Colors.deepOrangeAccent,
+                                // useSeriesColor: true,
+                                // offset: Offset(5, 0),
+                              ),
+                              markerSettings: MarkerSettings(
+                                  isVisible: true,
+                                  height:  4,
+                                  width:  4,
+                                  borderWidth: 3,
+                                  borderColor: Colors.deepOrange
+                              ),
+                            )
+                          ])
+                  ),
+                ],
+              ),
+
 
               Expanded(
                 child: dataList(),

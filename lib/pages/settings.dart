@@ -13,7 +13,7 @@ var _water;
 var _drain;
 var _error = false;
 
-String about = """учет показаний счётчиков.\nFlutter/Dart\nver 1.0.0.""";
+String about = """учет показаний счётчиков.\nИсходный код: github.com/telnex\nver 1.0.0.""";
 
 
 class Settings extends StatefulWidget {

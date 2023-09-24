@@ -44,7 +44,7 @@ void main() async {
   MainScreen.meterNotifier.value = meter;
 
   runApp(MaterialApp(
-    // debugShowCheckedModeBanner: false,
+    debugShowCheckedModeBanner: false,
     theme: ThemeData(
       useMaterial3: true,
       primaryColor: Colors.lightBlue,
